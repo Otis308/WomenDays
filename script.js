@@ -23,8 +23,7 @@ const CONFIG = {
 
   /* ── Particle text (English titles) ── */
   particleText1: 'Happy',
-  particleText2: "Women's Day ♥",
-
+  particleText2: "Women's\nDay 8/3 ♥",
   /* ── Letter content ── */
   letterContent: `
     <div class="letter-heading">My dearest,</div>
@@ -201,15 +200,33 @@ function sampleText(text, count) {
   const W = 900, H = 250;
   const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
   const ctx = cv.getContext('2d');
-  const fs = text.length > 8 ? 88 : 120;
+  
+  // 1. Cân chỉnh font size gọn hơn nếu phát hiện có xuống dòng
+  const isMultiLine = text.includes('\n');
+  const fs = isMultiLine ? 80 : (text.length > 8 ? 88 : 120);
+  
   ctx.fillStyle = '#fff';
   ctx.font = `bold ${fs}px Georgia, serif`;
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(text, W/2, H/2);
+  
+  // 2. Xử lý cắt dòng và vẽ từng dòng lên Canvas
+  const lines = text.split('\n');
+  const lineHeight = fs * 1.2;
+  const startY = (H / 2) - ((lines.length - 1) * lineHeight) / 2;
+  
+  lines.forEach((line, index) => {
+    ctx.fillText(line, W/2, startY + index * lineHeight);
+  });
+  
   const data = ctx.getImageData(0,0,W,H).data;
   const valid = [];
+  
+  // 3. Tự động thu nhỏ tỷ lệ toàn bộ cụm chữ trên thiết bị Mobile (Màn hình < 768px)
+  const scale = innerWidth < 768 ? 95 : 55;
+  
   for (let y=0;y<H;y+=3) for (let x=0;x<W;x+=3)
-    if (data[(y*W+x)*4+3] > 100) valid.push({x:(x-W/2)/55, y:-(y-H/2)/55});
+    if (data[(y*W+x)*4+3] > 100) valid.push({x:(x-W/2)/scale, y:-(y-H/2)/scale});
+    
   const out = new Float32Array(count*3);
   for (let i=0;i<count;i++) {
     const p = valid.length ? valid[Math.floor(Math.random()*valid.length)] : {x:0,y:0};
