@@ -261,7 +261,7 @@
 .shooting-stars {
   position: absolute;
   inset: 0;
-  overflow: hidden;
+  overflow:  hidden;
 }
 .shoot {
   position: absolute;
